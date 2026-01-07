@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Financial Mathematics Self-Assessment</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; line-height: 1.6; max-width: 900px; margin: 20px auto; padding: 20px; background: #f8f9fa; color: #333; }
+        .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); margin-bottom: 25px; }
+        .question-text { font-weight: 600; font-size: 1.1em; margin-bottom: 15px; display: block; }
+        .option { display: block; margin: 10px 0; padding: 12px; border: 2px solid #e9ecef; border-radius: 8px; cursor: pointer; transition: 0.2s; }
+        .option:hover { background: #f1f3f5; }
+        .selected { background: #e7f5ff; border-color: #339af0; font-weight: bold; }
+        
+        /* Review UI */
+        .review-box { padding: 20px; border-radius: 8px; margin: 25px 0; border-left: 10px solid; }
+        .review-correct { background: #ebfbee; border-color: #40c057; }
+        .review-wrong { background: #fff5f5; border-color: #fa5252; }
+        .review-question-header { font-weight: bold; font-size: 1.1em; color: #2c3e50; margin-bottom: 15px; display: block; border-bottom: 1px dashed #ccc; padding-bottom: 10px; }
+        .review-meta { font-size: 1.1em; margin: 8px 0; }
+        .solution-text { margin-top: 15px; padding: 12px; background: rgba(255,255,255,0.6); border-radius: 6px; border: 1px solid rgba(0,0,0,0.05); }
+        .tip-msg { color: #d9480f; font-weight: 500; margin-top: 10px; display: block; background: #fff4e6; padding: 12px; border-radius: 6px; border-left: 4px solid #fd7e14; }
+        
+        /* Topic Mastery UI */
+        .mastery-container { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 30px; }
+        .mastery-box { padding: 20px; border-radius: 12px; border: 1px solid; }
+        .mastery-ok { background: #e7f5ff; border-color: #339af0; color: #1c7ed6; }
+        .mastery-revisit { background: #fff9db; border-color: #fcc419; color: #856404; }
+        .mastery-box h3 { margin-top: 0; font-size: 1.2em; border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 8px; }
+        .topic-item { margin: 10px 0; font-weight: 600; font-size: 1em; display: flex; align-items: center; }
+        
+        #results { display: none; }
+        button { background: #339af0; color: white; border: none; padding: 15px; border-radius: 6px; cursor: pointer; width: 100%; font-size: 1.1em; font-weight: bold; transition: 0.3s; }
+        button:hover { background: #228be6; transform: translateY(-1px); }
+
+        .tax-table { width: 100%; border-collapse: collapse; margin: 15px 0; font-size: 0.95em; background: #fff; }
+        .tax-table th, .tax-table td { border: 1px solid #dee2e6; padding: 12px; text-align: left; }
+        .tax-table th { background: #f1f3f5; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <div id="quiz-container">
+        <h1 style="text-align: center;">Financial Mathematics Self-Assessment</h1>
+        <p style="text-align: center; color: #666;">Complete the following questions.</p>
+        <div id="quiz-list"></div>
+        <button onclick="calculateResults()">Submit</button>
+    </div>
+
+    <div id="results" class="card">
+        <div style="text-align: center;">
+            <h1>Feedback Summary</h1>
+            <h2 id="finalTime" style="color: #495057; font-weight: 400; margin-bottom: 30px;"></h2>
+        </div>
+        
+        <div id="revisit-section"></div>
+
+        <hr style="opacity: 0.3; margin: 40px 0;">
+        <h2 style="text-align: center;">Detailed Learning Review</h2>
+        <div id="detailed-review"></div>
+        <button style="background: #868e96; margin-top: 20px;" onclick="location.reload()">Restart</button>
+    </div>
+
+<script>
+let startTime = Date.now();
+
+const questions = [
+    {
+        q: "A shopkeeper gains 35% on cost price by selling a smartphone for $1282.50. Find the cost price.",
+        options: ["$833.60", "$950", "$1247.50", "$1731.40"],
+        correct: 1,
+        topic: "Profit & Loss",
+        solution: "Cost Price (CP) = 100%. Selling Price = 135%. <br>CP = ($1282.50 ÷ 135) × 100 = $950.",
+        feedback: { 
+            0: "Common Error: You calculated 35% of the selling price. Remember, profit is calculated based on the original Cost Price (100%).",
+            2: "Common Error: You subtracted 35% from the selling price. You should use the ratio 135% : 100% to find the original value.",
+            3: "Common Error: You added 35% to the selling price."
+        }
+    },
+    {
+        q: "A sofa was sold for $900 after a 25% discount. Calculate the original price.",
+        options: ["$675", "$1125", "$1200", "$1500"],
+        correct: 2,
+        topic: "Discount",
+        solution: "After a 25% discount, the price is 75% of the original. <br>Original Price = $900 ÷ 0.75 = $1200.",
+        feedback: { 
+            0: "Common Error: You subtracted 25% from the sale price.",
+            1: "Common Error: You added 25% to the sale price. Discount percentages are based on the (larger) original price."
+        }
+    },
+    {
+        q: "Mr Tan borrowed $2800 at 9% p.a. simple interest. Find the interest he must pay in 2 years.",
+        options: ["$252", "$504", "$550", "$3304"],
+        correct: 1,
+        topic: "Simple Interest",
+        solution: "Interest (I) = P × R × T = $2800 × 0.09 × 2 = $504.",
+        feedback: { 
+            0: "Common Error: You found the interest for 1 year only. Multiply by Time (2 years).",
+            3: "Common Error: This is the Total Amount (P+I). The question asks for interest only."
+        }
+    },
+    {
+        q: "Vanie invests $3800 at 7% p.a. compound interest compounded annually. Calculate interest earned after 5 years.",
+        options: ["$1330", "$1400", "$1530.01", "$5330.01"],
+        correct: 2,
+        topic: "Compound Interest",
+        solution: "Total Amount = $3800 × (1.07)^5 = $5330.01. <br>Interest = $5330.01 - $3800 = $1530.01.",
+        feedback: { 
+            0: "Common Error: You calculated simple interest. Compound interest earns 'interest on interest.'",
+            3: "Common Error: This is the Total Amount. Subtract the principal to find the interest earned."
+        }
+    },
+    {
+        q: "A $3600 sofa is bought with zero down payment and 24 monthly instalments at 3% p.a. flat rate. Find the monthly instalment.",
+        options: ["$150", "$154.50", "$159", "$309"],
+        correct: 2,
+        topic: "Hire Purchase",
+        solution: "Total Interest = $3600 × 0.03 × 2 years = $216. <br>Total amount to pay = $3600 + $216 = $3816. <br>Monthly instalment = $3816 ÷ 24 = $159.",
+        feedback: { 
+            0: "Common Error: You divided the principal by 24 without adding the total interest first.",
+            1: "Common Error: You calculated interest for 1 year instead of the full 2 years (24 months)."
+        }
+    },
+    {
+        q: "The following is the currency exchange table shown at a bank in Singapore in Dec 2025:<br><table class='tax-table'><tr><th>Currency</th><th>Bank Buy (S$)</th><th>Bank Sell (S$)</th></tr><tr><td>1 Euro (€)</td><td>1.4250</td><td>1.4580</td></tr></table><br>Mr Raju exchanged S$2500 into Euros at this bank. Calculate the amount he received in Euros.",
+        options: ["€1714.68", "€1754.39", "€3562.50", "€3645.00"],
+        correct: 0,
+        topic: "Money Exchange",
+        solution: "The bank is <b>selling</b> Euros to Mr Raju. <br>Use the Bank Sell rate: S$2500 ÷ 1.4580 = €1714.68.",
+        feedback: { 
+            1: "Common Error: You used the 'Bank Buy' rate. Since the bank is providing the foreign currency, they are 'selling' it to you.",
+            2: "Common Error: You multiplied by the Buy rate. To convert from SGD to a stronger foreign unit, you must divide.",
+            3: "Common Error: You multiplied by the Sell rate. Remember to divide when converting SGD into Euros."
+        }
+    },
+    {
+        q: "In 2024, Ms Lim earned $6500 monthly. She donated 1% of income to charity monthly. Annual reliefs for family were $10500. Calculate her 2024 Income Tax based on this table:<br><table class='tax-table'><tr><th>Taxable Income</th><th>Rate (%)</th><th>Gross Tax Payable ($)</th></tr><tr><td>First $20,000<br>Next $10,000</td><td>0<br>2</td><td>0<br>200</td></tr><tr><td>First $30,000<br>Next $10,000</td><td>-<br>3.5</td><td>200<br>350</td></tr><tr><td>First $40,000<br>Next $40,000</td><td>-<br>7</td><td>550<br>2800</td></tr><tr><td>First $80,000<br>Next $40,000</td><td>-<br>11.5</td><td>3350<br>4600</td></tr></table>",
+        options: ["$1870.40", "$2420.40", "$2475", "$3210"],
+        correct: 1,
+        topic: "Income Tax",
+        solution: "Step 1: Annual Income = $6500 × 12 = $78,000.<br>Step 2: Total Reliefs = $10,500 + (1% of $78,000) = $10,500 + $780 = $11,280.<br>Step 3: Taxable Income = $78,000 - $11,280 = $66,720.<br>Step 4: Base Tax for first $40,000 = $550.<br>Step 5: Bracket Tax for remaining = ($66,720 - $40,000) × 7% = $1,870.40.<br>Step 6: Total Income Tax = $550 + $1,870.40 = $2,420.40.",
+        feedback: { 
+            0: "Common Error: You calculated the tax for the specific bracket correctly, but forgot to add the base tax ($550) for the previous levels."
+        }
+    },
+    {
+        q: "A meal is $650.45 before 10% service charge and 9% GST. Find cost per person for 6 people.",
+        options: ["$119", "$129", "$130", "$141.80"],
+        correct: 2,
+        topic: "GST 9%",
+        solution: "Total Bill = $650.45 × 1.10 × 1.09 = $779.89. <br>Per person = $779.89 ÷ 6 = $129.98 ≈ $130.",
+        feedback: { 
+            1: "Common Error: You likely added GST and Service Charge separately (19%). GST applies to the amount *after* the service charge is added."
+        }
+    }
+];
+
+let userAnswers = {};
+
+function renderQuiz() {
+    const quizDiv = document.getElementById('quiz-list');
+    questions.forEach((item, index) => {
+        let html = `<div class="card">
+            <span class="question-text">${index + 1}. ${item.q}</span>`;
+        item.options.forEach((opt, i) => {
+            html += `<div class="option" onclick="selectOption(${index}, ${i})" id="q${index}o${i}">${opt}</div>`;
+        });
+        html += `</div>`;
+        quizDiv.innerHTML += html;
+    });
+}
+
+function selectOption(qIdx, oIdx) {
+    userAnswers[qIdx] = oIdx;
+    const options = document.querySelectorAll(`[id^='q${qIdx}o']`);
+    options.forEach(opt => opt.classList.remove('selected'));
+    document.getElementById(`q${qIdx}o${oIdx}`).classList.add('selected');
+}
+
+function calculateResults() {
+    if (Object.keys(userAnswers).length < questions.length) {
+        alert("Please answer all questions before submitting!");
+        return;
+    }
+    const duration = Math.floor((Date.now() - startTime) / 1000);
+    const mins = Math.floor(duration / 60);
+    const secs = duration % 60;
+    
+    document.getElementById('quiz-container').style.display = 'none';
+    document.getElementById('results').style.display = 'block';
+    document.getElementById('finalTime').innerText = `Time Taken: ${mins}m ${secs}s`;
+
+    let topicsMap = {};
+    let reviewHtml = "";
+
+    questions.forEach((item, index) => {
+        const isCorrect = userAnswers[index] === item.correct;
+        if (!topicsMap[item.topic]) topicsMap[item.topic] = true;
+        if (!isCorrect) topicsMap[item.topic] = false;
+        
+        const statusClass = isCorrect ? 'review-correct' : 'review-wrong';
+        const userPick = item.options[userAnswers[index]];
+        const correctPick = item.options[item.correct];
+        
+        let tipFeedback = "";
+        if (!isCorrect && item.feedback && item.feedback[userAnswers[index]]) {
+            tipFeedback = `<span class="tip-msg">💡 ${item.feedback[userAnswers[index]]}</span>`;
+        }
+
+        reviewHtml += `
+            <div class="review-box ${statusClass}">
+                <span class="review-question-header">Question ${index + 1}: ${item.q}</span>
+                <div class="review-meta"><b>Your Answer:</b> ${userPick} ${isCorrect ? '✅' : '❌'}</div>
+                ${!isCorrect ? `<div class="review-meta"><b>Correct Answer:</b> ${correctPick}</div>` : ''}
+                ${tipFeedback}
+                <div class="solution-text"><b>Step-by-Step Solution:</b><br>${item.solution}</div>
+            </div>`;
+    });
+
+    let masteredList = "";
+    let revisitList = "";
+
+    for (const [topic, isMastered] of Object.entries(topicsMap)) {
+        if (isMastered) {
+            masteredList += `<div class="topic-item">🔹 ${topic}</div>`;
+        } else {
+            revisitList += `<div class="topic-item">📍 ${topic}</div>`;
+        }
+    }
+
+    let summaryHtml = `
+        <div class="mastery-container">
+            <div class="mastery-box mastery-ok">
+                <h3>Next Steps: Mastery</h3>
+                <p style="font-size: 0.9em; margin-bottom: 15px; color: #555;">Try intermediate or advanced problems on the following topics:</p>
+                ${masteredList || '<p>Review the concepts below to begin your mastery journey.</p>'}
+            </div>
+            <div class="mastery-box mastery-revisit">
+                <h3>Next Steps: Review</h3>
+                <p style="font-size: 0.9em; margin-bottom: 15px; color: #555;">Focus on foundational practice and clearing misconceptions for:</p>
+                ${revisitList || '<p>Fantastic work! No topics require immediate review.</p>'}
+            </div>
+        </div>`;
+
+    document.getElementById('revisit-section').innerHTML = summaryHtml;
+    document.getElementById('detailed-review').innerHTML = reviewHtml;
+    window.scrollTo(0,0);
+}
+renderQuiz();
+</script>
+</body>
+</html>
